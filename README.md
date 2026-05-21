@@ -29,7 +29,7 @@ The result is a side-by-side comparison of traditional vs. AI-enhanced routing, 
 
 ### AI-Enhanced Weight Formula
 
-The key insight behind this project is a single formula that combines physical distance with predicted risk:
+The key insight behind this project is a single sole formula that combines physical distance with predicted risk:
 
 ```
 ai_weight = distance + (failure_probability × penalty_factor)
