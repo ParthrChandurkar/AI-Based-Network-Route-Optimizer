@@ -1,6 +1,6 @@
 # 🌐 AI-Based Network Route Optimizer
 
-> A final-year engineering project combining **Design & Analysis of Algorithms** with **Machine Learning** — built as a fully interactive Streamlit dashboard for real-time network topology visualization, intelligent routing, and failure-aware traffic simulation.
+> An engineering project combining **Design & Analysis of Algorithms** with **Machine Learning** — built as a fully interactive Streamlit dashboard for real-time network topology visualization, intelligent routing, and failure-aware traffic simulation.
 
 ---
 
