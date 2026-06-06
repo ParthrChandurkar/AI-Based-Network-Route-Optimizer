@@ -10,7 +10,68 @@ Modern networks face constant challenges: link failures, traffic surges, and unp
 
 The **AI-Based Network Route Optimizer** trains a Random Forest classifier on synthetic network telemetry data to predict the probability of link failure in real time. That failure probability is then fed into an **AI-Enhanced Dijkstra** algorithm, dynamically re-weighting edges to steer traffic away from high-risk paths — before failures even occur.
 
-The result is a side-by-side comparison of traditional vs. AI-enhanced routing, stress-testing tools, and a live interactive topology map — all inside a six-tab Streamlit dashboard.
+The result is a side-by-side comparison of traditional vs. AI-enhanced routing, stress-testing tools, and a live interactive topology map — all inside a seven-tab Streamlit dashboard.
+
+---
+
+## Architecture Diagram
+
+```mermaid
+flowchart TD
+    User["User"] --> Dashboard["Streamlit dashboard<br/>app.py"]
+    Dashboard --> Tabs["Overview | ML Model | Builder | Routing<br/>Algorithm Comparison | Simulation | Analytics"]
+    Dashboard --> State["st.session_state<br/>graph, model, scaler, metrics, routes"]
+
+    State --> Graph["NetworkX graph G<br/>routers, links, telemetry, risk attrs"]
+
+    subgraph Topology["Topology and simulation layer"]
+        Builder["network_builder.py<br/>build/add/remove/update routers and links"] --> Graph
+        Simulation["simulation.py<br/>stress, random failures, restore"] --> Graph
+        Simulation --> Snapshot["edge attribute snapshots"]
+    end
+
+    subgraph ML["Machine learning pipeline"]
+        Generator["data_generator.py<br/>synthetic telemetry"] --> Dataset[(network_data.csv)]
+        Dataset --> Trainer["model.py<br/>train_model RandomForest"]
+        Trainer --> Artifacts[(failure_model.pkl<br/>failure_scaler.pkl)]
+        Artifacts --> Loader["model.py<br/>load_model"]
+        Loader --> State
+        Trainer --> Metrics["accuracy, precision, recall, F1<br/>confusion matrix, feature importance"]
+        Metrics --> State
+        State --> Predictor["model.py<br/>predict_graph_edges"]
+        Graph --> Predictor
+        Predictor --> RiskAttrs["failure_prob and risk_label per edge"]
+        RiskAttrs --> Graph
+    end
+
+    subgraph Routing["Routing engine"]
+        Graph --> Traditional["Traditional weights<br/>distance"]
+        Graph --> AIWeights["compute_ai_weights<br/>distance + failure_prob * penalty"]
+        Traditional --> Algorithms["Dijkstra<br/>Bellman-Ford<br/>Floyd-Warshall"]
+        AIWeights --> AIAlgorithms["AI-enhanced Dijkstra<br/>AI Bellman-Ford<br/>AI Floyd-Warshall"]
+        Algorithms --> Results["path, cost, hops, risk, time"]
+        AIAlgorithms --> Results
+        Results --> State
+    end
+
+    subgraph Visualization["Analytics and visualization layer"]
+        Graph --> Charts["analytics.py<br/>Plotly topology, gauges, matrix, comparison charts"]
+        Metrics --> Charts
+        Results --> Charts
+        Charts --> Dashboard
+    end
+
+    classDef ui fill:#dbeafe,stroke:#2563eb,color:#111827;
+    classDef data fill:#dcfce7,stroke:#16a34a,color:#111827;
+    classDef ml fill:#fef3c7,stroke:#d97706,color:#111827;
+    classDef route fill:#ede9fe,stroke:#7c3aed,color:#111827;
+    class Dashboard,Tabs,State,Charts ui;
+    class Graph,Dataset,Artifacts,Snapshot,RiskAttrs data;
+    class Generator,Trainer,Loader,Metrics,Predictor ml;
+    class Traditional,AIWeights,Algorithms,AIAlgorithms,Results route;
+```
+
+The Streamlit app keeps the active graph, trained model, scaler, metrics, and route results in session state. The ML pipeline annotates every NetworkX edge with failure probability and risk labels, then the routing layer compares distance-only paths against AI-penalized paths before Plotly renders the dashboard.
 
 ---
 
@@ -73,7 +134,7 @@ Both routing variants share identical worst-case complexity — the AI enhanceme
 ```
 ai-based-network-route-optimizer/
 │
-├── app.py                  # Streamlit entry point — 6 fully functional tabs
+├── app.py                  # Streamlit entry point — 7 fully functional tabs
 ├── model.py                # RandomForest training, inference, and evaluation
 ├── routing.py              # Standard Dijkstra + AI-Enhanced Dijkstra
 ├── network_builder.py      # NetworkX graph CRUD (add/remove nodes & edges)
