@@ -157,17 +157,30 @@ ai-based-network-route-optimizer/
 - Python 3.9+
 - pip
 
-# (Recommended) Create and activate a virtual environment
-python -m venv venv
+### Install
 
-# Windows PowerShell
+Create and activate a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Windows PowerShell:
+
+```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\venv\Scripts\Activate.ps1
+```
 
-# macOS / Linux
+macOS / Linux:
+
+```bash
 source venv/bin/activate
+```
 
-# Install dependencies
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
 ```
 
