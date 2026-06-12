@@ -192,6 +192,12 @@ streamlit run app.py
 
 Open **http://localhost:8501** in your browser.
 
+### Troubleshooting
+
+- If Streamlit reports missing packages, rerun `pip install -r requirements.txt` inside the active virtual environment.
+- If routing metrics look empty on a fresh clone, open the ML Model tab and train the model once so the `.pkl` artifacts are available.
+- If port `8501` is already in use, run `streamlit run app.py --server.port 8502` and open the new local URL.
+
 ---
 
 ## 🖥️ Usage Flow
