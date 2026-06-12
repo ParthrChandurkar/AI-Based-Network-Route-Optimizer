@@ -196,25 +196,16 @@ Open **http://localhost:8501** in your browser.
 
 ## 🖥️ Usage Flow
 
-The dashboard is designed to be used in tab order for a first run:
+The dashboard is easiest to explore in this order on a first run:
 
-**1. ML Model tab**
-Click **"Generate Data & Train Model"** once. This generates the synthetic dataset, trains the Random Forest, and saves `failure_model.pkl` and `failure_scaler.pkl` to disk. Subsequent runs load from disk automatically.
-
-**2. Overview tab**
-View the live network topology. Edges are colour-coded by risk level (green = safe, yellow = moderate, red = high risk). Node and edge counts update as you modify the graph.
-
-**3. Routing tab**
-Select a source and destination router from the dropdowns. Click **"Find Routes"** to run both algorithms simultaneously. The panel shows each algorithm's chosen path, total cost, hop count, and average link risk — side by side.
-
-**4. Simulation tab**
-Use the traffic and latency multiplier sliders to stress the network. Click **"Inject Random Failure"** to simulate a link going down. Watch how edge colours and routing decisions change in response.
-
-**5. Builder tab**
-Add custom routers (nodes) and links (edges) with configurable properties. Remove existing ones. The graph updates live without needing to restart or retrain.
-
-**6. Analytics tab**
-Explore the model's performance: confusion matrix, precision/recall, and feature importance rankings. Compare route risk profiles across multiple source-destination pairs with the route comparison chart.
+| Step | Tab | What to do | What to observe |
+|---|---|---|---|
+| 1 | ML Model | Click **"Generate Data & Train Model"** once. | The dataset, model, scaler, and evaluation metrics are created for the session. |
+| 2 | Overview | Inspect the live topology map. | Edge colours show safe, moderate, and high-risk links. |
+| 3 | Routing | Choose source/destination routers and click **"Find Routes"**. | Standard and AI-enhanced routes appear side by side with cost, hops, and risk. |
+| 4 | Simulation | Increase traffic/latency multipliers or inject a random failure. | Risk scores and route choices shift as link conditions degrade. |
+| 5 | Builder | Add, remove, or update routers and links. | The graph changes immediately without restarting the app. |
+| 6 | Analytics | Review confusion matrix, feature importance, and route comparisons. | Model behavior and routing trade-offs become easier to explain. |
 
 ---
 
