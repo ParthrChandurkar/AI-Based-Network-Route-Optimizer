@@ -4,7 +4,6 @@ All mutations are in-place on G. Always call predict_graph_edges after running.
 """
 import networkx as nx
 import numpy as np
-import copy
 
 
 def snapshot(G: nx.Graph) -> dict:
@@ -16,8 +15,8 @@ def restore(G: nx.Graph, snap: dict):
     """Restore edge attrs from a snapshot."""
     for (u, v), attrs in snap.items():
         if G.has_edge(u, v):
-            for k, val in attrs.items():
-                G[u][v][k] = val
+            G[u][v].clear()
+            G[u][v].update(attrs)
 
 
 def apply_stress(G: nx.Graph,
@@ -32,16 +31,21 @@ def apply_stress(G: nx.Graph,
 
 
 def apply_random_failures(G: nx.Graph, n_fail: int = 0, seed: int = 42):
-    """Mark n_fail random non-failed links as failed."""
+    """Mark up to n_fail random non-failed links as failed."""
     if n_fail <= 0:
-        return
+        return []
     rng   = np.random.default_rng(seed)
-    edges = list(G.edges())
+    edges = [(u, v) for u, v, data in G.edges(data=True) if not data.get("failed", False)]
     n     = min(n_fail, len(edges))
+    if n == 0:
+        return []
     idxs  = rng.choice(len(edges), size=n, replace=False)
+    failed_edges = []
     for i in idxs:
         u, v = edges[int(i)]
         G[u][v]["failed"] = True
+        failed_edges.append((u, v))
+    return failed_edges
 
 
 def restore_all_failures(G: nx.Graph):
