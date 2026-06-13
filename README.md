@@ -192,6 +192,14 @@ streamlit run app.py
 
 Open **http://localhost:8501** in your browser.
 
+### Test
+
+Run the lightweight regression suite:
+
+```bash
+python -m unittest discover -s tests
+```
+
 ### Troubleshooting
 
 - If Streamlit reports missing packages, rerun `pip install -r requirements.txt` inside the active virtual environment.
