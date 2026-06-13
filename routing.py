@@ -20,10 +20,16 @@ def compute_ai_weights(G: nx.Graph, penalty: float = PENALTY_DEFAULT):
 
 
 def _active_graph(G: nx.Graph) -> nx.Graph:
-    keep = [(u, v) for u, v, d in G.edges(data=True) if not d.get("failed", False)]
-    if not keep:
-        return G.copy()
-    return G.edge_subgraph(keep).copy()
+    """Return a copy of G containing all nodes and only non-failed edges."""
+    H = G.__class__()
+    H.graph.update(G.graph)
+    H.add_nodes_from((node, data.copy()) for node, data in G.nodes(data=True))
+    H.add_edges_from(
+        (u, v, data.copy())
+        for u, v, data in G.edges(data=True)
+        if not data.get("failed", False)
+    )
+    return H
 
 
 def _path_metrics(G: nx.Graph, path: list, algo_name: str, elapsed_ms: float) -> dict:
