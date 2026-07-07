@@ -189,6 +189,18 @@ python -m unittest discover -s tests
 7. Review the Analytics tab for route risk, feature importance, and health
    summaries.
 
+## Dashboard Tabs
+
+| Tab | What it helps with |
+|---|---|
+| Overview | Inspect the current topology and high-level network state. |
+| ML Model | Generate data, train the model, and review evaluation metrics. |
+| Builder | Add, update, or remove routers and links interactively. |
+| Routing | Compare selected source-destination paths. |
+| Algorithm Comparison | Review traditional and AI-enhanced algorithm behavior side by side. |
+| Simulation | Apply stress conditions and random failures. |
+| Analytics | Explore route risk, feature importance, and health charts. |
+
 ## Dataset
 
 The included `network_data.csv` contains synthetic link telemetry generated from
