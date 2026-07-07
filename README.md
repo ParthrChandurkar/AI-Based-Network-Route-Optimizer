@@ -1,165 +1,135 @@
-# 🌐 AI-Based Network Route Optimizer
+# AI-Based Network Route Optimizer
 
-> An engineering project combining **Design & Analysis of Algorithms** with **Machine Learning** — built as a fully interactive Streamlit dashboard for real-time network topology visualization, intelligent routing, and failure-aware traffic simulation.
+A Streamlit dashboard for comparing traditional shortest-path routing with
+machine-learning assisted, failure-aware routing. The project combines graph
+algorithms, synthetic network telemetry, Random Forest failure prediction, stress
+simulation, and Plotly analytics in one interactive application.
 
----
+## Overview
 
-## 📌 Project Overview
+Modern network routes are usually selected from static edge weights such as
+distance or latency. That works when the network is healthy, but it does not
+account for links that are overloaded, lossy, or likely to fail soon.
 
-Modern networks face constant challenges: link failures, traffic surges, and unpredictable latency spikes. Traditional routing algorithms like Dijkstra operate purely on static weights — they have no awareness of *risk*. This project bridges that gap.
+This project adds a prediction layer on top of classical routing. A Random
+Forest model estimates the failure probability of each network link from live
+link attributes, and the routing engine uses that probability to penalize risky
+edges before selecting a path.
 
-The **AI-Based Network Route Optimizer** trains a Random Forest classifier on synthetic network telemetry data to predict the probability of link failure in real time. That failure probability is then fed into an **AI-Enhanced Dijkstra** algorithm, dynamically re-weighting edges to steer traffic away from high-risk paths — before failures even occur.
+```text
+ai_weight = distance + (failure_probability * penalty_factor)
+```
 
-The result is a side-by-side comparison of traditional vs. AI-enhanced routing, stress-testing tools, and a live interactive topology map — all inside a seven-tab Streamlit dashboard.
+When the penalty factor is low, routing behaves like standard shortest-path
+routing. As the penalty increases, the optimizer prefers safer routes even when
+they are longer.
 
----
+## Key Features
 
-## Architecture Diagram
+- Interactive Streamlit dashboard with seven tabs: Overview, ML Model, Builder,
+  Routing, Algorithm Comparison, Simulation, and Analytics.
+- NetworkX topology builder for adding, removing, and updating routers and
+  links without restarting the app.
+- Random Forest link-failure predictor trained on synthetic telemetry:
+  bandwidth, latency, packet loss, and traffic load.
+- Failure-aware routing for Dijkstra, Bellman-Ford, and Floyd-Warshall using the
+  same AI-weighting strategy.
+- Stress simulation for traffic load, latency, packet loss, and random link
+  failures.
+- Plotly visualizations for topology, route comparison, model metrics, feature
+  importance, risk distribution, and network health.
+- Lightweight regression tests for failed-link routing and simulation restore
+  behavior.
+
+## Project Contributions
+
+These are the main contributions this repository highlights on GitHub:
+
+1. Built an AI-enhanced edge-weighting layer that combines physical distance
+   with predicted link-failure probability.
+2. Added side-by-side comparison of traditional and AI-enhanced routing across
+   Dijkstra, Bellman-Ford, and Floyd-Warshall.
+3. Created an interactive topology builder for live graph mutation through the
+   Streamlit interface.
+4. Implemented traffic, latency, packet-loss, and random-failure simulation to
+   test routing resilience.
+5. Added analytics views for model performance, feature importance, route risk,
+   and network health.
+
+## Architecture
 
 ```mermaid
 flowchart TD
-    User["User"] --> Dashboard["Streamlit dashboard<br/>app.py"]
-    Dashboard --> Tabs["Overview | ML Model | Builder | Routing<br/>Algorithm Comparison | Simulation | Analytics"]
-    Dashboard --> State["st.session_state<br/>graph, model, scaler, metrics, routes"]
+    User[User] --> UI[Streamlit app.py]
+    UI --> Graph[NetworkX graph]
+    UI --> Builder[network_builder.py]
+    UI --> Sim[simulation.py]
+    UI --> Charts[analytics.py]
 
-    State --> Graph["NetworkX graph G<br/>routers, links, telemetry, risk attrs"]
+    DataGen[data_generator.py] --> Data[network_data.csv]
+    Data --> Train[model.py train_model]
+    Train --> Model[failure_model.pkl]
+    Train --> Scaler[failure_scaler.pkl]
 
-    subgraph Topology["Topology and simulation layer"]
-        Builder["network_builder.py<br/>build/add/remove/update routers and links"] --> Graph
-        Simulation["simulation.py<br/>stress, random failures, restore"] --> Graph
-        Simulation --> Snapshot["edge attribute snapshots"]
-    end
+    Model --> Predict[Predict link risk]
+    Scaler --> Predict
+    Graph --> Predict
+    Predict --> Risk[Edge failure_prob and risk_label]
+    Risk --> Graph
 
-    subgraph ML["Machine learning pipeline"]
-        Generator["data_generator.py<br/>synthetic telemetry"] --> Dataset[(network_data.csv)]
-        Dataset --> Trainer["model.py<br/>train_model RandomForest"]
-        Trainer --> Artifacts[(failure_model.pkl<br/>failure_scaler.pkl)]
-        Artifacts --> Loader["model.py<br/>load_model"]
-        Loader --> State
-        Trainer --> Metrics["accuracy, precision, recall, F1<br/>confusion matrix, feature importance"]
-        Metrics --> State
-        State --> Predictor["model.py<br/>predict_graph_edges"]
-        Graph --> Predictor
-        Predictor --> RiskAttrs["failure_prob and risk_label per edge"]
-        RiskAttrs --> Graph
-    end
-
-    subgraph Routing["Routing engine"]
-        Graph --> Traditional["Traditional weights<br/>distance"]
-        Graph --> AIWeights["compute_ai_weights<br/>distance + failure_prob * penalty"]
-        Traditional --> Algorithms["Dijkstra<br/>Bellman-Ford<br/>Floyd-Warshall"]
-        AIWeights --> AIAlgorithms["AI-enhanced Dijkstra<br/>AI Bellman-Ford<br/>AI Floyd-Warshall"]
-        Algorithms --> Results["path, cost, hops, risk, time"]
-        AIAlgorithms --> Results
-        Results --> State
-    end
-
-    subgraph Visualization["Analytics and visualization layer"]
-        Graph --> Charts["analytics.py<br/>Plotly topology, gauges, matrix, comparison charts"]
-        Metrics --> Charts
-        Results --> Charts
-        Charts --> Dashboard
-    end
-
-    classDef ui fill:#dbeafe,stroke:#2563eb,color:#111827;
-    classDef data fill:#dcfce7,stroke:#16a34a,color:#111827;
-    classDef ml fill:#fef3c7,stroke:#d97706,color:#111827;
-    classDef route fill:#ede9fe,stroke:#7c3aed,color:#111827;
-    class Dashboard,Tabs,State,Charts ui;
-    class Graph,Dataset,Artifacts,Snapshot,RiskAttrs data;
-    class Generator,Trainer,Loader,Metrics,Predictor ml;
-    class Traditional,AIWeights,Algorithms,AIAlgorithms,Results route;
+    Graph --> Routing[routing.py]
+    Routing --> Traditional[Distance-only routes]
+    Routing --> AI[Failure-aware routes]
+    Traditional --> Charts
+    AI --> Charts
 ```
 
-The Streamlit app keeps the active graph, trained model, scaler, metrics, and route results in session state. The ML pipeline annotates every NetworkX edge with failure probability and risk labels, then the routing layer compares distance-only paths against AI-penalized paths before Plotly renders the dashboard.
+## How It Works
 
----
+1. `data_generator.py` creates synthetic telemetry records with a binary
+   `failure` label.
+2. `model.py` trains a `RandomForestClassifier` and saves the model and scaler.
+3. `network_builder.py` creates the default router topology and supports graph
+   edits from the dashboard.
+4. `model.py` annotates each edge with `failure_prob` and `risk_label`.
+5. `routing.py` computes traditional and AI-enhanced paths.
+6. `simulation.py` mutates link conditions to test degraded-network behavior.
+7. `analytics.py` renders the topology, comparisons, and health charts.
 
-## 🎯 Key Features
+## Algorithms
 
-- **Live network topology** — colour-coded edges visualize link risk (green → yellow → red) in real time
-- **Dual routing engine** — run standard Dijkstra and AI-Enhanced Dijkstra on the same graph simultaneously and compare path cost, hop count, and risk score
-- **Random Forest failure predictor** — trained on 800 rows of synthetic telemetry (bandwidth, latency, packet loss, jitter, uptime) to score each link's failure probability
-- **Traffic & latency stress simulation** — configurable multipliers inject realistic load; random failure injection tests network resilience
-- **Dynamic graph builder** — add/remove routers and links on the fly without restarting the app
-- **Analytics dashboard** — confusion matrix, feature importance chart, per-route risk comparison plots, all rendered with Plotly
+| Algorithm | Weight Used | Time Complexity | Purpose |
+|---|---|---:|---|
+| Dijkstra | `distance` | `O((V + E) log V)` | Fast shortest path on non-negative weights |
+| AI Dijkstra | `ai_weight` | `O((V + E) log V)` | Fast failure-aware shortest path |
+| Bellman-Ford | `distance` | `O(VE)` | Single-source shortest path comparison |
+| AI Bellman-Ford | `ai_weight` | `O(VE)` | Failure-aware single-source comparison |
+| Floyd-Warshall | `distance` | `O(V^3)` | All-pairs routing table style comparison |
+| AI Floyd-Warshall | `ai_weight` | `O(V^3)` | Failure-aware all-pairs comparison |
 
----
+## Project Structure
 
-## 🧠 Core Concepts
-
-### AI-Enhanced Weight Formula
-
-The key insight behind this project is a single sole formula that combines physical distance with predicted risk:
-
-```
-ai_weight = distance + (failure_probability × penalty_factor)
-```
-
-- **`distance`** — base link cost (latency, hop count, or physical distance)
-- **`failure_probability`** — output of the Random Forest model (0.0 → 1.0)
-- **`penalty_factor`** — tunable slider in the UI; higher values make the algorithm more aggressively avoid risky links
-
-When `penalty_factor = 0`, AI-Enhanced Dijkstra degenerates to standard Dijkstra. As the penalty increases, the algorithm increasingly favours longer-but-safer paths over shorter-but-risky ones.
-
-### Why Random Forest?
-
-Random Forest was chosen over simpler classifiers (Logistic Regression, Naive Bayes) for several reasons:
-
-- **Non-linearity** — link failure is rarely a linear function of a single metric; RF captures feature interactions (e.g. high latency *combined with* high packet loss is far riskier than either alone)
-- **Feature importance** — RF naturally ranks which telemetry signals matter most, giving interpretable insight
-- **Robustness** — ensemble averaging reduces overfitting on noisy network data
-- **No scaling required** — unlike SVM or KNN, RF handles mixed feature magnitudes without normalization
-
----
-
-## ⚙️ Algorithm Complexity
-
-| Algorithm | Time Complexity | Space Complexity | Notes |
-|---|---|---|---|
-| Standard Dijkstra | O((V + E) log V) | O(V + E) | Min-heap priority queue |
-| AI-Enhanced Dijkstra | O((V + E) log V) | O(V + E) | Same structure; weight function differs |
-| RF Training | O(n · d · k · log n) | O(k · d) | n=samples, d=depth, k=trees |
-| RF Inference | O(k · log n) | O(k) | Per-link, runs at routing time |
-| K-Means (topology init) | O(i · n · k) | O(n + k) | i=iterations |
-
-> V = routers, E = links, k = trees, n = training samples, d = max tree depth
-
-Both routing variants share identical worst-case complexity — the AI enhancement adds **zero asymptotic overhead**. The only runtime cost is RF inference per edge, which is negligible (microseconds per link).
-
----
-
-## 🗂️ Project Structure
-
-```
-ai-based-network-route-optimizer/
-│
-├── app.py                  # Streamlit entry point — 7 fully functional tabs
-├── model.py                # RandomForest training, inference, and evaluation
-├── routing.py              # Standard Dijkstra + AI-Enhanced Dijkstra
-├── network_builder.py      # NetworkX graph CRUD (add/remove nodes & edges)
-├── simulation.py           # Traffic/latency stress multipliers + random failure injection
-├── analytics.py            # All Plotly chart builders (confusion matrix, feature importance, etc.)
-├── data_generator.py       # Synthetic 800-row training dataset generator
-├── utils.py                # Colour maps, shared constants, helper functions
-├── network_data.csv        # Pre-generated dataset (ready to use without regenerating)
-├── failure_model.pkl       # Trained RandomForest model (saved after first training run)
-├── failure_scaler.pkl      # Feature scaler for inference (saved alongside model)
-└── requirements.txt        # Python dependencies
+```text
+AI-Based-Network-Route-Optimizer/
+|-- app.py                         # Streamlit dashboard entry point
+|-- analytics.py                   # Plotly chart builders
+|-- data_generator.py              # Synthetic network telemetry generator
+|-- model.py                       # Training, loading, and link prediction
+|-- network_builder.py             # NetworkX topology creation and mutation
+|-- routing.py                     # Traditional and AI-enhanced routing
+|-- simulation.py                  # Stress tests, failures, and restore logic
+|-- utils.py                       # Shared constants and helper functions
+|-- network_data.csv               # Pre-generated training dataset
+|-- failure_model.pkl              # Saved Random Forest model
+|-- failure_scaler.pkl             # Saved feature scaler
+|-- requirements.txt               # Python dependencies
+`-- tests/
+    `-- test_routing_simulation.py # Regression tests
 ```
 
----
+## Quick Start
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.9+
-- pip
-
-### Install
-
-Create and activate a virtual environment:
+### 1. Create a virtual environment
 
 ```bash
 python -m venv venv
@@ -168,128 +138,103 @@ python -m venv venv
 Windows PowerShell:
 
 ```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
 .\venv\Scripts\Activate.ps1
 ```
 
-macOS / Linux:
+macOS or Linux:
 
 ```bash
 source venv/bin/activate
 ```
 
-Install dependencies:
+### 2. Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Launch
+### 3. Run the dashboard
 
 ```bash
 streamlit run app.py
 ```
 
-Open **http://localhost:8501** in your browser.
+Open the local URL shown by Streamlit, usually:
 
-### Test
+```text
+http://localhost:8501
+```
 
-Run the lightweight regression suite:
+### 4. Run tests
 
 ```bash
 python -m unittest discover -s tests
 ```
 
-### Troubleshooting
+## Recommended Demo Flow
 
-- If Streamlit reports missing packages, rerun `pip install -r requirements.txt` inside the active virtual environment.
-- If routing metrics look empty on a fresh clone, open the ML Model tab and train the model once so the `.pkl` artifacts are available.
-- If port `8501` is already in use, run `streamlit run app.py --server.port 8502` and open the new local URL.
+1. Open the ML Model tab and train the model.
+2. Inspect the default topology in the Overview tab.
+3. Choose a source and destination in the Routing tab.
+4. Compare traditional and AI-enhanced paths.
+5. Use the Simulation tab to increase traffic, latency, packet loss, or failed
+   links.
+6. Re-run routing and observe how the AI-weighted path changes.
+7. Review the Analytics tab for route risk, feature importance, and health
+   summaries.
 
----
+## Dataset
 
-## 🖥️ Usage Flow
-
-The dashboard is easiest to explore in this order on a first run:
-
-| Step | Tab | What to do | What to observe |
-|---|---|---|---|
-| 1 | ML Model | Click **"Generate Data & Train Model"** once. | The dataset, model, scaler, and evaluation metrics are created for the session. |
-| 2 | Overview | Inspect the live topology map. | Edge colours show safe, moderate, and high-risk links. |
-| 3 | Routing | Choose source/destination routers and click **"Find Routes"**. | Standard and AI-enhanced routes appear side by side with cost, hops, and risk. |
-| 4 | Simulation | Increase traffic/latency multipliers or inject a random failure. | Risk scores and route choices shift as link conditions degrade. |
-| 5 | Builder | Add, remove, or update routers and links. | The graph changes immediately without restarting the app. |
-| 6 | Analytics | Review confusion matrix, feature importance, and route comparisons. | Model behavior and routing trade-offs become easier to explain. |
-
----
-
-## 📊 Machine Learning Pipeline
-
-### Dataset (`network_data.csv`)
-
-800 rows of synthetic network telemetry, generated by `data_generator.py`:
+The included `network_data.csv` contains synthetic link telemetry generated from
+four features:
 
 | Feature | Description |
 |---|---|
-| `bandwidth_utilization` | Link load as a percentage (0–100) |
-| `latency_ms` | Current round-trip latency in milliseconds |
-| `packet_loss_rate` | Packet loss as a percentage (0–1) |
-| `jitter_ms` | Latency variance in milliseconds |
-| `uptime_hours` | Hours since last link reset |
-| `link_distance` | Physical or logical distance weight |
-| `failure` | Binary label — 0 (stable) or 1 (at-risk) |
+| `bandwidth` | Link bandwidth in Mbps |
+| `latency` | Link latency in milliseconds |
+| `packet_loss` | Packet loss percentage |
+| `traffic_load` | Current utilization percentage |
+| `failure` | Binary target label, where `1` means at-risk |
 
-### Training (`model.py`)
+The data is generated with a stress score that increases when bandwidth is low
+or latency, packet loss, and traffic load are high.
 
-1. Load `network_data.csv`
-2. Standard train/test split (80/20)
-3. Feature scaling via `StandardScaler`
-4. Fit `RandomForestClassifier(n_estimators=100, random_state=42)`
-5. Evaluate: accuracy, precision, recall, F1, confusion matrix
-6. Serialize model and scaler to `.pkl` files
+## Model
 
-### Inference (at routing time)
+`model.py` trains a `RandomForestClassifier` with:
 
-For each link in the graph, the current telemetry values are assembled into a feature vector, passed through the loaded scaler, and then through the RF model to produce a `failure_probability` in [0, 1]. This value is used directly in the AI-Enhanced weight formula.
+- 150 trees
+- max depth of 8
+- balanced class weights
+- 80/20 train-test split
+- `StandardScaler` preprocessing
 
----
+The dashboard reports accuracy, precision, recall, F1 score, confusion matrix,
+classification report, and feature importance.
 
-## 🔬 Design & Analysis of Algorithms — Connection
+## Testing Notes
 
-This project was built as a DAA capstone. The algorithmic content covers:
+Current tests cover:
 
-- **Graph representation** — NetworkX adjacency lists; discussed trade-offs vs. adjacency matrix for sparse vs. dense topologies
-- **Shortest path** — Dijkstra with a min-heap (priority queue), proven O((V+E) log V)
-- **Greedy strategy** — both Dijkstra variants are greedy algorithms; the AI variant modifies the cost function but preserves the greedy selection property
-- **Ensemble methods** — Random Forest as a bagging ensemble; bias-variance decomposition discussed in the analytics tab
-- **Clustering** — K-Means used for initializing synthetic node positions in the generator; inertia tracked across k values
+- Failed links are excluded from traditional and AI routes.
+- Random failure injection only selects active links.
+- Simulation restore removes stale edge attributes and restores saved values.
 
----
+Run them before pushing changes:
 
-## 📦 Dependencies
-
-```
-streamlit
-networkx
-scikit-learn
-pandas
-numpy
-plotly
-matplotlib
+```bash
+python -m unittest discover -s tests
 ```
 
-All pinned in `requirements.txt`.
+## Future Improvements
 
----
+- Replace synthetic data with real telemetry from SNMP, NetFlow, or router logs.
+- Add k-shortest paths for load-balanced route recommendations.
+- Add REST API endpoints for external route queries.
+- Store simulation scenarios for repeatable experiments.
+- Add exportable route reports for demonstrations and project submissions.
 
-## 🛠️ Extending the Project
+## License
 
-Some natural extensions explored or planned:
-
-- **Real telemetry** — replace the synthetic generator with SNMP polling or a NetFlow collector
-- **OSPF comparison** — add a third routing variant using link-state advertisement weights
-- **Temporal modelling** — use an LSTM on time-series link metrics instead of a static RF classifier
-- **Multi-path routing** — k-shortest-paths with load balancing across the top-3 AI-ranked routes
-- **REST API** — expose routing decisions via FastAPI so external systems can query optimal paths
-
----
+This repository is intended for academic and portfolio use. Add a license file
+before using it in a production or commercial environment.
