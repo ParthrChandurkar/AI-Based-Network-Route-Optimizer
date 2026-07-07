@@ -177,6 +177,15 @@ http://localhost:8501
 python -m unittest discover -s tests
 ```
 
+## Troubleshooting
+
+- If Streamlit cannot find a package, confirm the virtual environment is active
+  and rerun `pip install -r requirements.txt`.
+- If the dashboard opens with empty model metrics, go to the ML Model tab and
+  train the model once.
+- If port `8501` is already busy, run `streamlit run app.py --server.port 8502`
+  and open the URL printed in the terminal.
+
 ## Recommended Demo Flow
 
 1. Open the ML Model tab and train the model.
