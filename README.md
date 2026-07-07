@@ -56,6 +56,15 @@ These are the main contributions this repository highlights on GitHub:
 5. Added analytics views for model performance, feature importance, route risk,
    and network health.
 
+## Repository Highlights
+
+- `app.py` ties the graph, model, simulation controls, and analytics into one
+  Streamlit workflow.
+- `routing.py` keeps traditional and AI-enhanced path calculations comparable by
+  using the same graph state with different edge weights.
+- `tests/test_routing_simulation.py` protects the failure-handling behavior that
+  matters most for demos and regressions.
+
 ## Architecture
 
 ```mermaid
