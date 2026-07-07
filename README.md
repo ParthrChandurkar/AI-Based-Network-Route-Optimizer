@@ -129,6 +129,12 @@ AI-Based-Network-Route-Optimizer/
 
 ## Quick Start
 
+### Prerequisites
+
+- Python 3.9 or newer
+- pip
+- A terminal that can run Streamlit locally
+
 ### 1. Create a virtual environment
 
 ```bash
